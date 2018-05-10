@@ -2,7 +2,7 @@
 
 A Wox plugin helps you to quick eject usb storage device.
 
-![ScreenShoot.png](ScreenShoot.png)
+![screenshot.png](screenshot.png)
 
 ## Usage
 * type 'eject'
