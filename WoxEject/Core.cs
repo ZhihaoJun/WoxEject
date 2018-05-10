@@ -18,12 +18,10 @@ namespace WoxEject {
         private Core() { }
 
         public static bool EjectDrive(USBDeviceInfo drive) {
-            foreach (var letter in drive.DriveLetters) {
-                if (EjectDriveLetter(letter) == false) {
-                    return false;
-                }
+            if (drive.DriveLetters.Count <= 0) {
+                return false;
             }
-            return true;
+            return EjectDriveLetter(drive.DriveLetters[0]);
         }
 
         /*
