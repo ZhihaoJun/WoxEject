@@ -15,8 +15,12 @@ namespace WoxEject
             Console.WriteLine("[WoxEject.Query]");
             var devices = Core.ListUSBDevices();
             List<Result> results = new List<Result>();
-            foreach (var device in devices) {
-                results.Add(new DriveResult(device.Caption, device.DriveLettersToString()));
+            if (devices.Count == 0) {
+                results.Add(new DefaultIconResult("No Drives Found", null));
+            } else {
+                foreach (var device in devices) {
+                    results.Add(new DriveResult(device.Caption, device.DriveLettersToString(), device));
+                }
             }
             return results;
         }

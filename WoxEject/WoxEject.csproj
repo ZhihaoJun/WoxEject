@@ -33,6 +33,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -45,6 +46,8 @@
   <ItemGroup>
     <Compile Include="Core.cs" />
     <Compile Include="DriveResult.cs" />
+    <Compile Include="IconResult.cs" />
+    <Compile Include="OSDelegate.cs" />
     <Compile Include="USBDeviceInfo.cs" />
     <Compile Include="WoxEject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -6,8 +6,93 @@ using System.Management;
 
 namespace WoxEject {
     public class Core {
+        const uint GENERIC_READ = 0x80000000;
+        const uint GENERIC_WRITE = 0x40000000;
+        const int FILE_SHARE_READ = 0x1;
+        const int FILE_SHARE_WRITE = 0x2;
+        const int FSCTL_LOCK_VOLUME = 0x00090018;
+        const int FSCTL_DISMOUNT_VOLUME = 0x00090020;
+        const int IOCTL_STORAGE_EJECT_MEDIA = 0x2D4808;
+        const int IOCTL_STORAGE_MEDIA_REMOVAL = 0x002D4804;
+
+        private Core() { }
+
         public static bool EjectDrive(USBDeviceInfo drive) {
+            foreach (var letter in drive.DriveLetters) {
+                if (EjectDriveLetter(letter)) {
+                    return false;
+                }
+            }
             return true;
+        }
+
+        /*
+         * driveLetter eg. "H:"
+         */
+        private static bool EjectDriveLetter(string driveLetter) {
+            /*
+             https://stackoverflow.com/questions/3918248/how-to-eject-a-usb-removable-disk-volume-similar-to-the-eject-function-in-win
+             1. obtain a handle to the volume (CreateFile)
+             2. try to lock the volume (FSCTL_LOCK_VOLUME)
+             3. try to dismount it (FSCTL_DISMOUNT_VOLUME)
+             4. disable the prevent storage media removal (IOCTL_STORAGE_MEDIA_REMOVAL)
+             5. eject media (IOCTL_STORAGE_EJECT_MEDIA) 
+             */
+
+            var volumeHandle = DriveFileHandle(driveLetter);
+
+            if (LockVolume(volumeHandle) == false) {
+                return false;
+            }
+
+            if (DismountVolume(volumeHandle) == false) {
+                return false;
+            }
+
+            if (PreventVolumeRemoval(volumeHandle, false) == false) {
+                return false;
+            }
+
+            if (EjectVolume(volumeHandle) == false) {
+                return false;
+            }
+
+            if (CloseHandle(volumeHandle) == false) {
+                return false;
+            }
+            
+            return true;
+        }
+
+        private static IntPtr DriveFileHandle(string driveLetter) {
+            string filename = string.Format(@"\\.\{0}", driveLetter);
+            return OSDelegate.CreateFile(filename, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, 0x3, 0, IntPtr.Zero);
+        }
+
+        private static bool LockVolume(IntPtr handle) {
+            uint byteReturned;
+            return OSDelegate.DeviceIoControl(handle, FSCTL_LOCK_VOLUME, IntPtr.Zero, 0, IntPtr.Zero, 0, out byteReturned, IntPtr.Zero);
+        }
+
+        private static bool DismountVolume(IntPtr handle) {
+            uint byteReturned;
+            return OSDelegate.DeviceIoControl(handle, FSCTL_DISMOUNT_VOLUME, IntPtr.Zero, 0, IntPtr.Zero, 0, out byteReturned, IntPtr.Zero);
+        }
+
+        private static bool PreventVolumeRemoval(IntPtr handle, bool prevent) {
+            byte[] buf = new byte[1];
+            uint retVal;
+            buf[0] = prevent ? (byte)1 : (byte)0;
+            return OSDelegate.DeviceIoControl(handle, IOCTL_STORAGE_MEDIA_REMOVAL, buf, 1, IntPtr.Zero, 0, out retVal, IntPtr.Zero);
+        }
+
+        private static bool EjectVolume(IntPtr handle) {
+            uint byteReturned;
+            return OSDelegate.DeviceIoControl(handle, IOCTL_STORAGE_EJECT_MEDIA, IntPtr.Zero, 0, IntPtr.Zero, 0, out byteReturned, IntPtr.Zero);
+        }
+
+        private static bool CloseHandle(IntPtr handle) {
+            return OSDelegate.CloseHandle(handle);
         }
 
         public static List<USBDeviceInfo> ListUSBDevices() {
