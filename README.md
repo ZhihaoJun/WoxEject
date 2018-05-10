@@ -1,4 +1,4 @@
-# WocEject
+# WoxEject
 
 A Wox plugin helps you to quick eject usb storage device.
 
