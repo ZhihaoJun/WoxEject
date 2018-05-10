@@ -19,7 +19,7 @@ namespace WoxEject {
 
         public static bool EjectDrive(USBDeviceInfo drive) {
             foreach (var letter in drive.DriveLetters) {
-                if (EjectDriveLetter(letter)) {
+                if (EjectDriveLetter(letter) == false) {
                     return false;
                 }
             }

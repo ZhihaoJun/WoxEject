@@ -26,9 +26,12 @@ namespace WoxEject.Tests {
 
         [TestMethod()]
         public void NotifyIconTest() {
-            NotifyIcon icon = new NotifyIcon(new System.ComponentModel.Container());
+            NotifyIcon icon = new NotifyIcon();
+            string title = "Safe To Remove Hardware";
             string body = string.Format("Device '{0}' can now be safely removed from the computer", "haha");
-            icon.ShowBalloonTip(1000, "Safe To Remove Hardware", body, ToolTipIcon.Info);
+            icon.Visible = true;
+            icon.Icon = System.Drawing.SystemIcons.Information;
+            icon.ShowBalloonTip(1000, title, body, ToolTipIcon.Info);
         }
     }
 }
